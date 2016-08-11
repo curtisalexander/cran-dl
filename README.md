@@ -55,5 +55,8 @@ pkg <- file.path(pkg_dir, tgz_file)
 devtools::install_local(pkg)
 ```
 
+## CRAN
+The [CRAN mirror](https://cran.rstudio.com) from RStudio is hard-coded within the script.
+
 ## Related
 See [gh-dl](https://github.com/curtisalexander/gh-dl) which allows one to download R packages from Github.
