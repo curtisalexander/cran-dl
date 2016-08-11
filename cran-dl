@@ -1,0 +1,80 @@
+#!/usr/local/bin/Rscript --no-site-file --no-init-file --no-restore
+
+# --vanilla ==> --no-site-file --no-init-file --no-restore --no-environ
+# thus the above reads the .Renviron file(s)
+
+## required packages ==
+# devtools::install_github("docopt/docopt.R")
+# install.packages("httr")
+
+## docopt.org ==
+"Usage:
+cran-dl --pkg=<pkg> [--version=<version>] --path=<path>
+cran-dl -h | --help
+
+Options:
+--pkg=<pkg>             R package name
+--version=<version>     [Optional] R package version to download
+--path=<path>           Directory path to save tar.gz file
+-h, --help              Help
+
+Example:
+# download current version of dplyr
+cran-dl --pkg=dplyr --path=\"~/code/r-pkgs\"
+
+# download archived version, 0.4.3, of dplyr
+cran-dl --pkg=dplyr --version=0.4.3 --path=\"~/code/r-pkgs\"" -> doc
+
+## download ==
+opts <- docopt::docopt(doc)
+
+library("purrr")
+
+# interactive vs. Rscript
+if (interactive()) {
+  # testing
+  pkg <- "dplyr"
+  # pkg_version <- "0.4.3"
+  pkg_version <- NULL
+  pkg_path <- file.path("~/code/r-pkgs")
+} else {
+  pkg <- opts$pkg
+  pkg_version <- opts$version
+  pkg_path <- file.path(opts$path)
+}
+
+if(is.null(pkg_version)) {
+  ## current =====
+  cran_url <- httr::modify_url("https://cran.rstudio.com",
+                               path = paste0("src/contrib"))
+
+  # get current version of pkg
+  pkg_tgz <- xml2::read_html(cran_url) %>%
+    rvest::html_nodes(xpath = "//html/body/table/tr/td/a[@href]") %>%
+    rvest::html_text() %>%
+    purrr::keep(~ grepl(pattern = paste0("^", pkg),
+                        x = .,
+                        ignore.case = TRUE,
+                        perl = TRUE))
+
+  pkg_tgz_url <- httr::modify_url("https://cran.rstudio.com",
+                                  path = paste0("src/contrib/",
+                                                pkg_tgz))
+} else {
+  ## archive =====
+  # construct url
+  pkg_tgz <- paste0(pkg, "_", pkg_version, ".tar.gz")
+  pkg_tgz_url <- httr::modify_url("https://cran.rstudio.com",
+                                  path = paste0("src/contrib/Archive/",
+                                                pkg, "/",
+                                                pkg_tgz))
+}
+
+# download tar.gz file, checking status along the way
+httr::HEAD(pkg_tgz_url) %>%
+  httr::stop_for_status()
+
+httr::GET(pkg_tgz_url,
+          httr::write_disk(file.path(pkg_path, pkg_tgz)))
+
+# vim:syntax=R
