@@ -5,7 +5,7 @@ Download an R package as a tarball from CRAN.  Able to download either the curre
 Makes use of the following packages.  `devtools` is only required in order to install `docopt`.
 
 ```R
-devtools::install_github("docopt/docopt.R")
+install.packages("docopt")
 install.packages("httr")
 install.packages("purrr")
 install.packages("rvest")
