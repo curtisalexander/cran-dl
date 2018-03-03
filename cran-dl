@@ -55,7 +55,9 @@ if(is.null(pkg_version)) {
     purrr::keep(~ grepl(pattern = paste0("^", pkg, "_"),
                         x = .,
                         ignore.case = TRUE,
-                        perl = TRUE))
+                        perl = TRUE)) %>%
+    sort() %>%
+    .[1]  # first element
 
   pkg_tgz_url <- httr::modify_url("https://cran.rstudio.com",
                                   path = paste0("src/contrib/",
