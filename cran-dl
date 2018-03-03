@@ -52,7 +52,7 @@ if(is.null(pkg_version)) {
   pkg_tgz <- xml2::read_html(cran_url) %>%
     rvest::html_nodes(xpath = "//html/body/table/tr/td/a[@href]") %>%
     rvest::html_text() %>%
-    purrr::keep(~ grepl(pattern = paste0("^", pkg),
+    purrr::keep(~ grepl(pattern = paste0("^", pkg, "_"),
                         x = .,
                         ignore.case = TRUE,
                         perl = TRUE))
